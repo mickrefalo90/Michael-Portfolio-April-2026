@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&family=Caveat:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bebas Neue", sans-serif;
+  --font-handwritten: "Caveat", cursive;
+  --color-brand-primary: #1a1a1a;
+  --color-brand-accent: #00B137;
+  --color-brand-highlight: #00B137;
+  --color-bg-base: #fdfcfb;
+}
+
+@layer base {
+  body {
+    @apply bg-[--color-bg-base] text-zinc-900 selection:bg-[--color-brand-highlight] selection:text-white;
+  }
+}
+
+.text-display {
+  @apply font-display tracking-wider uppercase;
+}
+
+.glass {
+  @apply bg-white/80 backdrop-blur-md border border-zinc-200;
+}
+
+.noise {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.03;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.project-card-hover {
+  @apply transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-zinc-200;
+}
+
+.project-content-render img,
+.project-content-render video,
+.project-content-render iframe {
+  @apply w-full h-auto rounded-none md:rounded-xl shadow-2xl mb-12 block;
+}
+
+.project-content-render iframe {
+  @apply border-0;
+}
+
+.project-content-render p {
+  @apply text-white/90 leading-relaxed mb-8 text-lg md:text-xl max-w-3xl mx-auto;
+}
+
+.project-content-render h1, 
+.project-content-render h2, 
+.project-content-render h3,
+.project-content-render h4 {
+  @apply font-display uppercase tracking-[0.15em] text-white mb-8 mt-16 text-center max-w-4xl mx-auto leading-tight;
+}
+
+.project-content-render h1 { @apply text-4xl md:text-6xl; }
+.project-content-render h2 { @apply text-3xl md:text-5xl; }
+.project-content-render h3 { @apply text-2xl md:text-4xl; }
+.project-content-render h4 { @apply text-xl md:text-3xl; }
