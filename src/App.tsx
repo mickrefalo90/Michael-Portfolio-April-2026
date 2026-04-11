@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
+import { motion, useScroll, useTransform, AnimatePresence, useSpring } from "motion/react";
 import { 
   ExternalLink, 
   Mail, 
@@ -12,9 +12,101 @@ import {
   Menu,
   X,
   ArrowRight,
-  Loader2
+  Loader2,
+  FileText,
+  MousePointer2
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ReactNode } from "react";
+
+// --- Helper Components ---
+
+const CustomCursor = () => {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      setPosition({ x: e.clientX, y: e.clientY });
+      if (!isVisible) setIsVisible(true);
+    };
+
+    const onMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'A' || 
+        target.tagName === 'BUTTON' || 
+        target.closest('button') || 
+        target.closest('a') ||
+        target.classList.contains('cursor-pointer')
+      ) {
+        setIsHovering(true);
+      } else {
+        setIsHovering(false);
+      }
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseover', onMouseOver);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseover', onMouseOver);
+    };
+  }, [isVisible]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className={`hidden md:block ${isHovering ? 'cursor-active' : ''}`}>
+      <motion.div 
+        className="cursor-dot"
+        animate={{ x: position.x - 4, y: position.y - 4 }}
+        transition={{ type: "spring", damping: 30, stiffness: 250, mass: 0.5 }}
+      />
+      <motion.div 
+        className="cursor-outline"
+        animate={{ 
+          x: position.x - (isHovering ? 30 : 20), 
+          y: position.y - (isHovering ? 30 : 20),
+          scale: isHovering ? 1.2 : 1
+        }}
+        transition={{ type: "spring", damping: 20, stiffness: 150, mass: 0.8 }}
+      />
+    </div>
+  );
+};
+
+const Magnetic = ({ children }: { children: ReactNode }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: any) => {
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current!.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    const x = (clientX - centerX) * 0.35;
+    const y = (clientY - centerY) * 0.35;
+    setPosition({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setPosition({ x: 0, y: 0 });
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      animate={{ x: position.x, y: position.y }}
+      transition={{ type: "spring", damping: 15, stiffness: 150, mass: 0.1 }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const PROJECTS = [
   {
@@ -79,9 +171,52 @@ const PROJECTS = [
   }
 ];
 
-const BRANDS = [
-  "The Wiggles", "Unilever", "Toys'R'Us", "iiNet", "Goodman Fielder", "Coles", "Optus", "Disney", "Netflix", "Warner Bros"
-];
+const DynamicHelpText = () => {
+  const phrases = [
+    "Create a key visual for my NPD.",
+    "Animate my logo.",
+    "Build me a brand playbook.",
+    "Create a sample box.",
+    "Make my product sing.",
+    "Create supporting assets.",
+    "Design a pop-up.",
+    "I need a window display.",
+    "Develop a creative strategy.",
+    "Launch a global campaign.",
+    "Craft a unique brand identity.",
+    "Direct my next creative project.",
+    "Produce high-impact content.",
+    "Design my social media presence.",
+    "Build a modern web experience.",
+    "Elevate my brand production.",
+    "Refresh my visual language."
+  ];
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % phrases.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="h-24 md:h-40 flex items-center justify-center overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={index}
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -40, opacity: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="text-3xl md:text-6xl font-handwritten text-brand-accent text-center px-4"
+        >
+          {phrases[index]}
+        </motion.p>
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -112,25 +247,6 @@ export default function App() {
             if (firstImgIndex !== -1) {
               const injection = `<p class="text-white/90 leading-relaxed mb-8 text-lg md:text-xl max-w-3xl mx-auto font-bold text-center">Copywriting for radio advertising and audio recording direction:</p>`;
               content = content.slice(0, firstImgIndex + 2) + "\n" + injection + content.slice(firstImgIndex + 2);
-            }
-          }
-
-          // Remove 2nd image for Bacon Butty project
-          if (project.title.includes("Goodman Fielder") || project.subtitle.includes("Bacon Butty")) {
-            const imgTag = "<img";
-            const firstImgStart = content.indexOf(imgTag);
-            if (firstImgStart !== -1) {
-              const firstImgEnd = content.indexOf("/>", firstImgStart);
-              if (firstImgEnd !== -1) {
-                const secondImgStart = content.indexOf(imgTag, firstImgEnd);
-                if (secondImgStart !== -1) {
-                  const secondImgEnd = content.indexOf("/>", secondImgStart);
-                  if (secondImgEnd !== -1) {
-                    // Remove the second image tag and any surrounding whitespace/newlines
-                    content = content.slice(0, secondImgStart) + content.slice(secondImgEnd + 2);
-                  }
-                }
-              }
             }
           }
           
@@ -217,6 +333,9 @@ export default function App() {
   
   return (
     <div ref={containerRef} className="relative min-h-screen font-sans bg-[#fdfcfb] overflow-x-hidden">
+      {/* Custom Cursor */}
+      <CustomCursor />
+
       {/* Noise Texture Overlay */}
       <div className="noise" />
       
@@ -230,26 +349,40 @@ export default function App() {
         />
       </div>
       
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 w-full z-50 px-6 py-4 md:py-8 md:px-12 flex items-center justify-between text-zinc-900 bg-white/80 backdrop-blur-md">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="font-display text-2xl md:text-4xl tracking-widest uppercase hover:text-brand-accent transition-colors cursor-default whitespace-nowrap"
+      {/* Floating Navigation */}
+      <div className="fixed top-8 left-0 w-full z-50 px-6 flex justify-center pointer-events-none">
+        <motion.nav 
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", damping: 20, stiffness: 100 }}
+          className="pointer-events-auto flex items-center gap-6 md:gap-12 px-6 md:px-10 py-4 bg-white/70 backdrop-blur-xl border border-white/20 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
         >
-        Michael Refalo
-        </motion.div>
-        
-        <div className="flex items-center gap-8">
+          <a href="#" className="font-display text-xl md:text-2xl tracking-widest uppercase hover:text-brand-accent transition-colors">
+            MR
+          </a>
+          
+          <div className="hidden md:flex items-center gap-8">
+            {["Work", "About", "Contact"].map((item) => (
+              <a 
+                key={item} 
+                href={`#${item.toLowerCase()}`}
+                className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 hover:text-brand-accent transition-colors"
+              >
+                {item}
+              </a>
+            ))}
+          </div>
+
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-2 group"
           >
-            <span className="text-sm font-bold uppercase tracking-widest group-hover:text-brand-accent transition-all">Menu</span>
-            <Menu size={20} className="text-brand-accent group-hover:scale-110 transition-transform" />
+            <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-white group-hover:bg-brand-accent transition-colors">
+              <Menu size={14} />
+            </div>
           </button>
-        </div>
-      </nav>
+        </motion.nav>
+      </div>
 
       {/* Fullscreen Menu */}
       {isMenuOpen && (
@@ -289,23 +422,50 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             className="text-sm font-bold uppercase tracking-[0.3em] text-zinc-400 mb-8"
           >
-            Creative Manager & Art Director
+            Michael Refalo | Creative Manager
           </motion.div>
           
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-[clamp(4rem,12vw,15rem)] font-display leading-[0.8] tracking-wider mb-12 uppercase"
-          >
-            Bridging strategy <br /> <span className="text-brand-accent font-bold">& </span> execution.
-          </motion.h1>
+          <div className="overflow-hidden mb-2 md:mb-4">
+            <motion.h1 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[clamp(4rem,12vw,15rem)] font-display leading-[0.9] tracking-wider uppercase"
+            >
+              Bridging strategy
+            </motion.h1>
+          </div>
+          <div className="relative">
+            <div className="overflow-hidden mb-4 md:mb-6">
+              <motion.h1 
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                transition={{ duration: 1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="text-[clamp(4rem,12vw,15rem)] font-display leading-[0.9] tracking-wider uppercase"
+              >
+                <span className="text-brand-accent font-bold">& </span> execution
+              </motion.h1>
+            </div>
+
+            <div className="absolute -bottom-6 md:-bottom-10 left-0 z-10">
+              <motion.div
+                initial={{ clipPath: "inset(0 100% 0 0)" }}
+                animate={{ clipPath: "inset(0 0% 0 0)" }}
+                transition={{ delay: 1, duration: 1.5, ease: "easeInOut" }}
+                className="inline-block"
+              >
+                <p className="font-handwritten text-4xl md:text-6xl text-brand-accent transform -rotate-2 origin-left whitespace-nowrap">
+                  with a little bit of fun!
+                </p>
+              </motion.div>
+            </div>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-wrap gap-8 mb-16"
+            transition={{ delay: 1.2 }}
+            className="flex flex-wrap gap-8 mb-16 mt-16 md:mt-24"
           >
             {[
               { icon: <Zap size={18} />, title: "Creative Direction" },
@@ -326,7 +486,7 @@ export default function App() {
             className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end"
           >
             <p className="text-xl md:text-2xl text-zinc-600 leading-relaxed max-w-xl">
-              15+ years of experience directing creative teams to deliver impactful brand activations and end-to-end marketing campaigns.
+              15+ years of creating experiences while directing creative teams. Bringing interactive and engaging executions to life while delivering impactful brand activations and end-to-end marketing campaigns.
             </p>
             <div className="flex flex-col gap-6 items-start md:items-end">
               <a 
@@ -353,7 +513,7 @@ export default function App() {
             Selected <span className="text-brand-accent">Work</span>
           </h2>
           <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs max-w-xs md:text-right">
-            A collection of brand activations, digital platforms, and creative strategies.
+            A selection of Michael's favourite works:
           </p>
         </div>
 
@@ -397,13 +557,62 @@ export default function App() {
             </motion.div>
           ))}
         </div>
+
+        {/* Portfolio Buttons */}
+        <div className="flex flex-row items-center justify-center gap-4 mt-20 px-6">
+          {/* Behance Button */}
+          <Magnetic>
+            <a 
+              href="https://www.behance.net/michaelrefalo1" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group flex items-center justify-center gap-3 px-4 md:px-8 py-4 bg-[#00B137] outline outline-2 outline-[#00B137] -outline-offset-2 rounded-lg transition-all duration-400 hover:bg-white"
+            >
+              <svg 
+                viewBox="0 0 24 24" 
+                fill="currentColor" 
+                className="w-5 h-5 text-white group-hover:text-[#00B137] transition-colors duration-400"
+              >
+                <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14h-8.027c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zm-9.574 6.988h-6.466v-14.967h6.953c5.476.081 5.58 5.444 2.72 6.906 3.461 1.26 3.577 8.061-3.207 8.061zm-3.466-8.988h3.584c2.508 0 2.906-3-.312-3h-3.272v3zm3.391 3h-3.391v3.016h3.341c3.055 0 2.868-3.016.05-3.016z"/>
+              </svg>
+              <span className="text-white font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] group-hover:text-[#00B137] transition-colors duration-400 whitespace-nowrap">
+                View Behance
+              </span>
+            </a>
+          </Magnetic>
+
+          {/* Portfolio Button */}
+          <Magnetic>
+            <a 
+              href="https://drive.google.com/file/d/1YFPmXIzLVj3xbR5iqZpsLeW8RpNj5U3u/view?usp=drivesdk" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group flex items-center justify-center gap-3 px-4 md:px-8 py-4 bg-[#00B137] outline outline-2 outline-[#00B137] -outline-offset-2 rounded-lg transition-all duration-400 hover:bg-white"
+            >
+              <FileText className="w-5 h-5 text-white group-hover:text-[#00B137] transition-colors duration-400" />
+              <span className="text-white font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] group-hover:text-[#00B137] transition-colors duration-400 whitespace-nowrap">
+                View portfolio
+              </span>
+            </a>
+          </Magnetic>
+        </div>
       </section>
 
       {/* About Section */}
       <section id="about" className="py-32 px-6 md:px-12 lg:px-24 bg-zinc-950 text-white">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+        <div className="max-w-4xl mx-auto">
           <div className="space-y-12">
-            <h2 className="text-7xl md:text-9xl font-display tracking-wider uppercase leading-[0.8]">Meet <br /> Michael <br /> Refalo.</h2>
+            <div className="flex flex-row items-center gap-6 md:gap-12">
+              <div className="w-24 h-24 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-brand-accent shrink-0">
+                <img 
+                  src="https://media.licdn.com/dms/image/v2/C5603AQFc3qOsauE_4A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1530834090805?e=2147483647&v=beta&t=DliVNTbaoaLvCZ97QUHXkC34Y113mYergRT182lQp88" 
+                  alt="Michael Refalo" 
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h2 className="text-5xl md:text-9xl font-display tracking-wider uppercase leading-[0.8]">Meet <br /> Michael <br /> Refalo.</h2>
+            </div>
             <div className="space-y-8 text-zinc-400 text-xl leading-relaxed">
               <p>
                 With over 15 years of experience in brand strategy and creative design, Michael Refalo specialises in turning complex concepts into engaging visuals that are not only effective but also fun! He has had the opportunity to lead creative projects and teams across various industries, including work with notable brands like The Wiggles, TPG Telecom and Toys'R'Us.
@@ -415,87 +624,38 @@ export default function App() {
                 Beyond his creative work, he is a dedicated mentor and collaborative problem-solver who values guiding teams, pushing their creative boundaries and exploring thoughtful, innovative approaches for every presented challenge.
               </p>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 pt-8">
-              {[
-                { icon: <Zap size={20} />, title: "Creative Visionary" },
-                { icon: <Target size={20} />, title: "Strategic Architecture" },
-                { icon: <Layers size={20} />, title: "Global Leadership" },
-                { icon: <Users size={20} />, title: "Creative Mentorship" }
-              ].map((skill, i) => (
-                <div key={i} className="flex items-center gap-4 border-b border-zinc-800 pb-4 group">
-                  <div className="text-brand-accent transition-colors">{skill.icon}</div>
-                  <span className="font-bold uppercase tracking-widest text-sm group-hover:text-white transition-colors">{skill.title}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="relative">
-            <div className="aspect-[3/4] overflow-hidden">
-              <img 
-                src="https://instagram.fsyd5-1.fna.fbcdn.net/v/t51.82787-15/620190846_18036782162746346_1488749971840737327_n.webp?_nc_cat=106&ig_cache_key=MzA2OTc1NjE2ODE2ODMxMTczNA%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE0NDB4MTQ0MC5zZHIuQzMifQ%3D%3D&_nc_ohc=aFsOPxC-muYQ7kNvwFgfFLc&_nc_oc=AdpvhZXQqzNiVpd4U-0XXHeTA6VcDfd-Dketk9xKgcmgWtPhOee-KQw3M_rTx4VPYY5OpLhn-vl0pXVEr8rxwRL-&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=instagram.fsyd5-1.fna&_nc_gid=e2ENmi21b6qqgJwfSWwwJA&_nc_ss=7a32e&oh=00_Af2DwxK86_pTkd83hKAPRCWOYrj-Es8CD-fCvXyIoYMxhg&oe=69D9035B" 
-                alt="Michael Refalo"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover grayscale"
-              />
-            </div>
-            
-            {/* Handwritten Note */}
-            <motion.div 
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              className="absolute bottom-16 right-10 md:bottom-24 md:right-20 z-30 pointer-events-none"
-            >
-              <div className="relative">
-                {/* Handwritten Text with "Writing" animation */}
-                <motion.div 
-                  variants={{
-                    hidden: { clipPath: "inset(-50% 100% -50% -50%)" },
-                    visible: { 
-                      clipPath: "inset(-50% -50% -50% -50%)", 
-                      transition: { duration: 2.5, delay: 0.4, ease: "linear" } 
-                    }
-                  }}
-                  className="relative px-8 py-4"
-                >
-                  <p className="font-handwritten text-4xl md:text-6xl text-[#00B137] leading-[0.75] text-center transform -rotate-3 select-none">
-                    Let's Create<br />Together
-                  </p>
-                </motion.div>
-              </div>
-            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-32 px-6 md:px-12 lg:px-24">
+      {/* Help & Contact Section */}
+      <section id="contact" className="py-32 px-6 md:px-12 lg:px-24 bg-white border-y border-zinc-100">
         <div className="max-w-4xl mx-auto text-center space-y-16">
-          <h2 className="text-7xl md:text-[12rem] font-display tracking-wider uppercase">Let's <span className="text-brand-accent">connect</span>.</h2>
+          <div className="space-y-8">
+            <h2 className="text-5xl md:text-8xl font-display tracking-wider uppercase leading-none">
+              So, how can <span className="text-brand-accent">I help?</span>
+            </h2>
+            <DynamicHelpText />
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <a href="mailto:m2.refalo.mr@gmail.com" className="group space-y-4">
-              <div className="text-brand-accent group-hover:scale-110 transition-transform">
-                <Mail size={32} className="mx-auto" />
+          <div className="flex flex-row flex-wrap justify-center items-center gap-8 md:gap-24">
+            <a href="mailto:m2.refalo.mr@gmail.com" className="group flex flex-col items-center gap-4 transition-transform hover:scale-105">
+              <div className="text-brand-accent">
+                <Mail size={48} className="md:w-16 md:h-16" />
               </div>
-              <p className="font-bold uppercase tracking-widest text-xs">Email</p>
-              <p className="text-lg">m2.refalo.mr@gmail.com</p>
+              <p className="font-bold uppercase tracking-widest text-base md:text-xl">Email</p>
             </a>
-            <a href="tel:+61409230959" className="group space-y-4">
-              <div className="text-brand-accent group-hover:scale-110 transition-transform">
-                <Phone size={32} className="mx-auto" />
+            <a href="tel:+61409230959" className="group flex flex-col items-center gap-4 transition-transform hover:scale-105">
+              <div className="text-brand-accent">
+                <Phone size={48} className="md:w-16 md:h-16" />
               </div>
-              <p className="font-bold uppercase tracking-widest text-xs">Phone</p>
-              <p className="text-lg">+61 409 230 959</p>
+              <p className="font-bold uppercase tracking-widest text-base md:text-xl">Phone</p>
             </a>
-            <a href="https://www.linkedin.com/in/michael-refalo" target="_blank" className="group space-y-4">
-              <div className="text-brand-accent group-hover:scale-110 transition-transform">
-                <Linkedin size={32} className="mx-auto" />
+            <a href="https://www.linkedin.com/in/michael-refalo" target="_blank" className="group flex flex-col items-center gap-4 transition-transform hover:scale-105">
+              <div className="text-brand-accent">
+                <Linkedin size={48} className="md:w-16 md:h-16" />
               </div>
-              <p className="font-bold uppercase tracking-widest text-xs">LinkedIn</p>
-              <p className="text-lg">Michael Refalo</p>
+              <p className="font-bold uppercase tracking-widest text-base md:text-xl">LinkedIn</p>
             </a>
           </div>
         </div>
