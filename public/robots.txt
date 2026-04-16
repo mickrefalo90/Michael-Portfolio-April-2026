@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ais-dev-doisifpulcidin5n5ltqv6-555318484993.run.app/sitemap.xml
