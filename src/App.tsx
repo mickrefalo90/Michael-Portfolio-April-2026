@@ -9,104 +9,14 @@ import {
   Layers, 
   Target, 
   Users, 
-  Menu,
   X,
   ArrowRight,
   Loader2,
-  FileText,
-  MousePointer2
+  FileText
 } from "lucide-react";
 import { useState, useRef, useEffect, ReactNode } from "react";
 
 // --- Helper Components ---
-
-const CustomCursor = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
-    };
-
-    const onMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        target.tagName === 'A' || 
-        target.tagName === 'BUTTON' || 
-        target.closest('button') || 
-        target.closest('a') ||
-        target.classList.contains('cursor-pointer')
-      ) {
-        setIsHovering(true);
-      } else {
-        setIsHovering(false);
-      }
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseover', onMouseOver);
-
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseover', onMouseOver);
-    };
-  }, [isVisible]);
-
-  if (!isVisible) return null;
-
-  return (
-    <div className={`hidden md:block ${isHovering ? 'cursor-active' : ''}`}>
-      <motion.div 
-        className="cursor-dot"
-        animate={{ x: position.x - 4, y: position.y - 4 }}
-        transition={{ type: "spring", damping: 30, stiffness: 250, mass: 0.5 }}
-      />
-      <motion.div 
-        className="cursor-outline"
-        animate={{ 
-          x: position.x - (isHovering ? 30 : 20), 
-          y: position.y - (isHovering ? 30 : 20),
-          scale: isHovering ? 1.2 : 1
-        }}
-        transition={{ type: "spring", damping: 20, stiffness: 150, mass: 0.8 }}
-      />
-    </div>
-  );
-};
-
-const Magnetic = ({ children }: { children: ReactNode }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: any) => {
-    const { clientX, clientY } = e;
-    const { left, top, width, height } = ref.current!.getBoundingClientRect();
-    const centerX = left + width / 2;
-    const centerY = top + height / 2;
-    const x = (clientX - centerX) * 0.35;
-    const y = (clientY - centerY) * 0.35;
-    setPosition({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setPosition({ x: 0, y: 0 });
-  };
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      animate={{ x: position.x, y: position.y }}
-      transition={{ type: "spring", damping: 15, stiffness: 150, mass: 0.1 }}
-    >
-      {children}
-    </motion.div>
-  );
-};
 
 const PROJECTS = [
   {
@@ -174,29 +84,28 @@ const PROJECTS = [
 const DynamicHelpText = () => {
   const phrases = [
     "Create a key visual for my NPD.",
-    "Animate my logo.",
-    "Build me a brand playbook.",
+    "Create an animated brand slate.",
+    "Develop a brand playbook.",
     "Create a sample box.",
-    "Make my product sing.",
-    "Create supporting assets.",
-    "Design a pop-up.",
-    "I need a window display.",
+    "Enhance the quality of my branding.",
+    "Enhance my brand with quality assets.",
+    "Design and curate an experiential pop-up display.",
+    "Create an engaging window display.",
     "Develop a creative strategy.",
-    "Launch a global campaign.",
+    "Develop a global launch strategy.",
     "Craft a unique brand identity.",
-    "Direct my next creative project.",
+    "Direct a creative project.",
     "Produce high-impact content.",
-    "Design my social media presence.",
-    "Build a modern web experience.",
-    "Elevate my brand production.",
-    "Refresh my visual language."
+    "Develop a cohesive social media brand playbook.",
+    "Elevate brand presence.",
+    "Revise and refresh visual language."
   ];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % phrases.length);
-    }, 3000);
+    }, 4500); // Slower cycle
     return () => clearInterval(timer);
   }, []);
 
@@ -208,7 +117,7 @@ const DynamicHelpText = () => {
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -40, opacity: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} 
           className="text-3xl md:text-6xl font-handwritten text-brand-accent text-center px-4"
         >
           {phrases[index]}
@@ -218,9 +127,56 @@ const DynamicHelpText = () => {
   );
 };
 
+const TypewriterHeading = () => {
+  const sentence = "So, how can I help?";
+  
+  const container = {
+    hidden: { opacity: 1 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.5,
+      },
+    },
+  };
+
+  const child = {
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.01,
+      },
+    },
+    hidden: {
+      opacity: 0,
+    },
+  };
+
+  return (
+    <motion.h2 
+      variants={container}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      className="text-5xl md:text-8xl font-display tracking-wider uppercase leading-none"
+    >
+      {sentence.split("").map((char, index) => (
+        <motion.span 
+          key={index} 
+          variants={child}
+          className={index >= 12 ? "text-brand-accent" : ""}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </motion.h2>
+  );
+};
+
 export default function App() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeProject, setActiveProject] = useState<any>(null);
+  const [isRatesOpen, setIsRatesOpen] = useState(false);
   const [projectContent, setProjectContent] = useState<string | null>(null);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [isActuallyFetching, setIsActuallyFetching] = useState(false);
@@ -321,7 +277,7 @@ export default function App() {
 
   // Prevent scroll when lightbox is open
   useEffect(() => {
-    if (activeProject) {
+    if (activeProject || isRatesOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -329,13 +285,10 @@ export default function App() {
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [activeProject]);
+  }, [activeProject, isRatesOpen]);
   
   return (
     <div ref={containerRef} className="relative min-h-screen font-sans bg-[#fdfcfb] overflow-x-hidden">
-      {/* Custom Cursor */}
-      <CustomCursor />
-
       {/* Noise Texture Overlay */}
       <div className="noise" />
       
@@ -349,73 +302,29 @@ export default function App() {
         />
       </div>
       
-      {/* Floating Navigation */}
-      <div className="fixed top-8 left-0 w-full z-50 px-6 flex justify-center pointer-events-none">
-        <motion.nav 
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ type: "spring", damping: 20, stiffness: 100 }}
-          className="pointer-events-auto flex items-center gap-6 md:gap-12 px-6 md:px-10 py-4 bg-white/70 backdrop-blur-xl border border-white/20 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
+      {/* Floating Buttons Group */}
+      <div className="fixed top-8 right-8 z-[60] flex flex-col gap-3 items-end">
+        <motion.a
+          href="#contact"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-white text-zinc-900 border border-zinc-200 px-6 md:px-8 py-3 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs shadow-lg hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-all duration-300"
         >
-          <a href="#" className="font-display text-xl md:text-2xl tracking-widest uppercase hover:text-brand-accent transition-colors">
-            MR
-          </a>
-          
-          <div className="hidden md:flex items-center gap-8">
-            {["Work", "About", "Contact"].map((item) => (
-              <a 
-                key={item} 
-                href={`#${item.toLowerCase()}`}
-                className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 hover:text-brand-accent transition-colors"
-              >
-                {item}
-              </a>
-            ))}
-          </div>
-
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex items-center gap-2 group"
-          >
-            <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-white group-hover:bg-brand-accent transition-colors">
-              <Menu size={14} />
-            </div>
-          </button>
-        </motion.nav>
+          Contact
+        </motion.a>
+        <motion.button
+          onClick={() => setIsRatesOpen(true)}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white text-brand-accent border border-brand-accent px-6 md:px-8 py-3 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs shadow-lg hover:bg-brand-accent hover:text-white transition-all duration-300"
+        >
+          Rates
+        </motion.button>
       </div>
-
-      {/* Fullscreen Menu */}
-      {isMenuOpen && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] bg-zinc-950 text-white flex flex-col items-center justify-center gap-12"
-        >
-          <button 
-            onClick={() => setIsMenuOpen(false)}
-            className="absolute top-8 right-12 p-4 hover:scale-110 transition-transform text-brand-accent"
-          >
-            <X size={32} />
-          </button>
-          {["Work", "About", "Contact"].map((item, i) => (
-              <motion.a 
-                key={item} 
-                href={`#${item.toLowerCase()}`} 
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: i * 0.1 }}
-                onClick={() => setIsMenuOpen(false)}
-                className="text-7xl md:text-9xl font-display uppercase tracking-wider hover:text-brand-accent transition-colors"
-              >
-                {item}
-              </motion.a>
-          ))}
-        </motion.div>
-      )}
-
+ 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-24 pt-32">
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-24 py-32 relative">
         <div className="max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -429,8 +338,8 @@ export default function App() {
             <motion.h1 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[clamp(4rem,12vw,15rem)] font-display leading-[0.9] tracking-wider uppercase"
+              transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[clamp(2.5rem,10vw,12rem)] font-display leading-[0.9] tracking-wider uppercase"
             >
               Bridging strategy
             </motion.h1>
@@ -440,31 +349,19 @@ export default function App() {
               <motion.h1 
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
-                transition={{ duration: 1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="text-[clamp(4rem,12vw,15rem)] font-display leading-[0.9] tracking-wider uppercase"
+                transition={{ duration: 1.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="text-[clamp(2.5rem,10vw,12rem)] font-display leading-[0.9] tracking-wider uppercase"
               >
                 <span className="text-brand-accent font-bold">& </span> execution
               </motion.h1>
             </div>
-
-            <div className="absolute -bottom-6 md:-bottom-10 left-0 z-10">
-              <motion.div
-                initial={{ clipPath: "inset(0 100% 0 0)" }}
-                animate={{ clipPath: "inset(0 0% 0 0)" }}
-                transition={{ delay: 1, duration: 1.5, ease: "easeInOut" }}
-                className="inline-block"
-              >
-                <p className="font-handwritten text-4xl md:text-6xl text-brand-accent transform -rotate-2 origin-left whitespace-nowrap">
-                  with a little bit of fun!
-                </p>
-              </motion.div>
-            </div>
           </div>
-
+ 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2 }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 1.4, duration: 1.5 }}
             className="flex flex-wrap gap-8 mb-16 mt-16 md:mt-24"
           >
             {[
@@ -478,36 +375,81 @@ export default function App() {
               </div>
             ))}
           </motion.div>
-
+ 
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.6, duration: 1.5 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end"
           >
             <p className="text-xl md:text-2xl text-zinc-600 leading-relaxed max-w-xl">
               15+ years of creating experiences while directing creative teams. Bringing interactive and engaging executions to life while delivering impactful brand activations and end-to-end marketing campaigns.
             </p>
-            <div className="flex flex-col gap-6 items-start md:items-end">
-              <a 
-                href="https://drive.google.com/file/d/1YY-ghTTgm-82TgV88nycvhP6t-6IzyV1/view?usp=sharing" 
-                target="_blank"
-                className="group flex items-center gap-4 text-lg font-bold uppercase tracking-widest hover:text-brand-accent transition-colors"
-              >
-                View Full CV
-                <div className="w-12 h-px bg-brand-accent group-hover:w-20 transition-all" />
-              </a>
-              <a href="#work" className="group flex items-center gap-4 text-lg font-bold uppercase tracking-widest hover:text-brand-accent transition-colors">
-                Explore Selected Work 
-                <div className="w-12 h-px bg-brand-accent group-hover:w-20 transition-all" />
-              </a>
-            </div>
           </motion.div>
         </div>
       </section>
-
+ 
+      {/* About Section */}
+      <section id="about" className="min-h-screen py-32 px-6 md:px-12 lg:px-24 bg-zinc-950 text-white relative flex items-center justify-center">
+        <div className="max-w-4xl mx-auto w-full">
+          <div className="space-y-12">
+            <motion.div 
+              initial={{ opacity: 0, x: -100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-row items-center gap-6 md:gap-12"
+            >
+              <div className="w-24 h-24 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-brand-accent shrink-0">
+                <img 
+                  src="https://media.licdn.com/dms/image/v2/C5603AQFc3qOsauE_4A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1530834090805?e=2147483647&v=beta&t=DliVNTbaoaLvCZ97QUHXkC34Y113mYergRT182lQp88" 
+                  alt="Michael Refalo" 
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h2 className="text-5xl md:text-9xl font-display tracking-wider uppercase leading-[0.8]">Meet <br /> Michael <br /> Refalo.</h2>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5, delay: 0.3 }}
+              className="space-y-8 text-zinc-400 text-lg md:text-xl leading-relaxed"
+            >
+              <p>
+                With over 15 years of experience in brand strategy and creative design, Michael Refalo specialises in turning complex concepts into engaging visuals that are not only effective but also fun! He has had the opportunity to lead creative projects and teams across various industries, including work with notable brands like The Wiggles, TPG Telecom and Toys'R'Us.
+              </p>
+              <p>
+                Michael takes a balanced approach in day-to-day creation. Ensuring that with every creative execution, he delivers effective solutions that impress the client and resonate with audiences.
+              </p>
+              <p>
+                Beyond his creative work, he is a dedicated mentor and collaborative problem-solver who values guiding teams, pushing their creative boundaries and exploring thoughtful, innovative approaches for every presented challenge.
+              </p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="pt-8 flex justify-center md:justify-start"
+            >
+              <a 
+                href="https://drive.google.com/file/d/1YY-ghTTgm-82TgV88nycvhP6t-6IzyV1/view?usp=sharing" 
+                target="_blank"
+                className="group flex items-center gap-4 px-8 py-4 border-2 border-brand-accent rounded-full text-white font-bold uppercase tracking-[0.2em] text-xs hover:bg-brand-accent transition-all duration-300"
+              >
+                View Full CV <ArrowUpRight size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              </a>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+ 
       {/* Work Section - Tiled Gallery Style */}
-      <section id="work" className="py-32 px-6 md:px-12 lg:px-24">
+      <section id="work" className="py-32 px-6 md:px-12 lg:px-24 relative min-h-screen">
         <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <h2 className="text-5xl md:text-7xl font-display uppercase tracking-widest leading-none">
             Selected <span className="text-brand-accent">Work</span>
@@ -521,10 +463,10 @@ export default function App() {
           {PROJECTS.map((project, i) => (
             <motion.div
               key={project.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: i * 0.1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ delay: i * 0.2, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
               className="group relative overflow-hidden bg-zinc-100 aspect-square cursor-pointer"
               onClick={() => openProject(project)}
             >
@@ -561,80 +503,31 @@ export default function App() {
         {/* Portfolio Buttons */}
         <div className="flex flex-row items-center justify-center gap-4 mt-20 px-6">
           {/* Behance Button */}
-          <Magnetic>
-            <a 
-              href="https://www.behance.net/michaelrefalo1" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="group flex items-center justify-center gap-3 px-4 md:px-8 py-4 bg-[#00B137] outline outline-2 outline-[#00B137] -outline-offset-2 rounded-lg transition-all duration-400 hover:bg-white"
+          <a 
+            href="https://www.behance.net/michaelrefalo1" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="group flex items-center justify-center gap-3 px-4 md:px-8 py-4 bg-[#00B137] outline outline-2 outline-[#00B137] -outline-offset-2 rounded-lg transition-all duration-400 hover:bg-white"
+          >
+            <svg 
+              viewBox="0 0 24 24" 
+              fill="currentColor" 
+              className="w-5 h-5 text-white group-hover:text-[#00B137] transition-colors duration-400"
             >
-              <svg 
-                viewBox="0 0 24 24" 
-                fill="currentColor" 
-                className="w-5 h-5 text-white group-hover:text-[#00B137] transition-colors duration-400"
-              >
-                <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14h-8.027c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zm-9.574 6.988h-6.466v-14.967h6.953c5.476.081 5.58 5.444 2.72 6.906 3.461 1.26 3.577 8.061-3.207 8.061zm-3.466-8.988h3.584c2.508 0 2.906-3-.312-3h-3.272v3zm3.391 3h-3.391v3.016h3.341c3.055 0 2.868-3.016.05-3.016z"/>
-              </svg>
-              <span className="text-white font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] group-hover:text-[#00B137] transition-colors duration-400 whitespace-nowrap">
-                View Behance
-              </span>
-            </a>
-          </Magnetic>
-
-          {/* Portfolio Button */}
-          <Magnetic>
-            <a 
-              href="https://drive.google.com/file/d/1YFPmXIzLVj3xbR5iqZpsLeW8RpNj5U3u/view?usp=drivesdk" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="group flex items-center justify-center gap-3 px-4 md:px-8 py-4 bg-[#00B137] outline outline-2 outline-[#00B137] -outline-offset-2 rounded-lg transition-all duration-400 hover:bg-white"
-            >
-              <FileText className="w-5 h-5 text-white group-hover:text-[#00B137] transition-colors duration-400" />
-              <span className="text-white font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] group-hover:text-[#00B137] transition-colors duration-400 whitespace-nowrap">
-                View portfolio
-              </span>
-            </a>
-          </Magnetic>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" className="py-32 px-6 md:px-12 lg:px-24 bg-zinc-950 text-white">
-        <div className="max-w-4xl mx-auto">
-          <div className="space-y-12">
-            <div className="flex flex-row items-center gap-6 md:gap-12">
-              <div className="w-24 h-24 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-brand-accent shrink-0">
-                <img 
-                  src="https://media.licdn.com/dms/image/v2/C5603AQFc3qOsauE_4A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1530834090805?e=2147483647&v=beta&t=DliVNTbaoaLvCZ97QUHXkC34Y113mYergRT182lQp88" 
-                  alt="Michael Refalo" 
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h2 className="text-5xl md:text-9xl font-display tracking-wider uppercase leading-[0.8]">Meet <br /> Michael <br /> Refalo.</h2>
-            </div>
-            <div className="space-y-8 text-zinc-400 text-xl leading-relaxed">
-              <p>
-                With over 15 years of experience in brand strategy and creative design, Michael Refalo specialises in turning complex concepts into engaging visuals that are not only effective but also fun! He has had the opportunity to lead creative projects and teams across various industries, including work with notable brands like The Wiggles, TPG Telecom and Toys'R'Us.
-              </p>
-              <p>
-                Michael takes a balanced approach in day-to-day creation. Ensuring that with every creative execution, he delivers effective solutions that impress the client and resonate with audiences.
-              </p>
-              <p>
-                Beyond his creative work, he is a dedicated mentor and collaborative problem-solver who values guiding teams, pushing their creative boundaries and exploring thoughtful, innovative approaches for every presented challenge.
-              </p>
-            </div>
-          </div>
+              <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14h-8.027c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zm-9.574 6.988h-6.466v-14.967h6.953c5.476.081 5.58 5.444 2.72 6.906 3.461 1.26 3.577 8.061-3.207 8.061zm-3.466-8.988h3.584c2.508 0 2.906-3-.312-3h-3.272v3zm3.391 3h-3.391v3.016h3.341c3.055 0 2.868-3.016.05-3.016z"/>
+            </svg>
+            <span className="text-white font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] group-hover:text-[#00B137] transition-colors duration-400 whitespace-nowrap">
+              View Behance
+            </span>
+          </a>
         </div>
       </section>
 
       {/* Help & Contact Section */}
-      <section id="contact" className="py-32 px-6 md:px-12 lg:px-24 bg-white border-y border-zinc-100">
+      <section id="contact" className="py-32 px-6 md:px-12 lg:px-24 bg-white border-y border-zinc-100 relative min-h-screen flex items-center justify-center">
         <div className="max-w-4xl mx-auto text-center space-y-16">
           <div className="space-y-8">
-            <h2 className="text-5xl md:text-8xl font-display tracking-wider uppercase leading-none">
-              So, how can <span className="text-brand-accent">I help?</span>
-            </h2>
+            <TypewriterHeading />
             <DynamicHelpText />
           </div>
           
@@ -670,6 +563,89 @@ export default function App() {
         </div>
         <p>Sydney, Australia</p>
       </footer>
+
+      {/* Rates Lightbox */}
+      <AnimatePresence>
+        {isRatesOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-12 bg-black/80 backdrop-blur-xl"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsRatesOpen(false);
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl overflow-hidden flex flex-col shadow-2xl border border-zinc-100 my-8 md:my-16"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 md:px-8 md:py-6 border-b border-zinc-100 bg-white sticky top-0 z-10">
+                <h2 className="text-xl md:text-4xl font-display uppercase tracking-widest text-zinc-900">Rate Card</h2>
+                <button 
+                  onClick={() => setIsRatesOpen(false)}
+                  className="p-1.5 md:p-2 hover:bg-zinc-100 rounded-full transition-colors text-zinc-400 hover:text-zinc-900"
+                >
+                  <X size={20} className="md:w-6 md:h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-6 md:space-y-10">
+                <div className="space-y-2 md:space-y-4">
+                  <p className="text-zinc-600 leading-relaxed text-sm md:text-lg">
+                    Michael is available for freelance and contract services. If you have a project in mind that's out of the below scope, feel free to email him here.{" "}
+                    <a href="mailto:m2.refalo.mr@gmail.com" className="text-brand-accent font-bold hover:underline">
+                      Email Michael.
+                    </a>
+                  </p>
+                </div>
+
+                <div className="space-y-3 md:space-y-4">
+                  <div className="grid grid-cols-1 gap-2 md:gap-4">
+                    {[
+                      { label: "Ad hoc Design Services", price: "$120AUD* /hour" },
+                      { label: "Logo Development", price: "$550*", note: "(with 2 revisions)" },
+                      { label: "Branding and Strategy Pack", price: "$1,200*", note: "(with consult and 2 revisions)" },
+                      { label: "Branding Pack add-on", price: "$500*", note: "(Animated Logo, Templates, Social Support)" }
+                    ].map((item, i) => (
+                      <div key={i} className="flex flex-col md:flex-row items-center justify-between p-3 md:p-6 bg-zinc-50 rounded-xl gap-1 md:gap-2 text-center md:text-left">
+                        <div>
+                          <p className="font-bold uppercase tracking-widest text-zinc-900 text-[10px] md:text-sm">{item.label}</p>
+                          {item.note && <p className="text-[8px] md:text-[10px] uppercase tracking-widest text-zinc-500 mt-0.5 md:mt-1">{item.note}</p>}
+                        </div>
+                        <p className="text-brand-accent font-display text-base md:text-xl">{item.price}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] md:text-[10px] text-zinc-400 uppercase tracking-widest text-right pr-2">
+                    * EX GST
+                  </p>
+                </div>
+
+                <div className="space-y-4 md:space-y-8">
+                  <p className="text-zinc-500 font-medium leading-tight md:leading-relaxed italic text-center px-4 text-[10px] md:text-base">
+                    Ongoing Creative Services are available, please contact Michael to discuss your needs and negotiate customised plan.
+                  </p>
+
+                  <div className="pt-2 md:pt-4 flex justify-center">
+                    <a 
+                      href="#contact" 
+                      onClick={() => setIsRatesOpen(false)}
+                      className="group flex items-center gap-2 md:gap-3 px-6 py-3 md:px-10 md:py-4 bg-zinc-900 text-white rounded-full font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs hover:bg-brand-accent transition-all duration-300"
+                    >
+                      Contact Michael <ArrowRight size={14} className="md:w-4 md:h-4" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Project Lightbox */}
       <AnimatePresence>
