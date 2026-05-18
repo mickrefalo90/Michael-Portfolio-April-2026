@@ -289,6 +289,47 @@ export default function App() {
   
   return (
     <div ref={containerRef} className="relative min-h-screen font-sans bg-[#fdfcfb] overflow-x-hidden">
+      {/* Hidden SEO Section for Search Engines, ATS, and LLMs */}
+      <section className="sr-only">
+        <h1>Michael Refalo - Freelance Creative Manager & Graphic Designer in Sydney</h1>
+        <p>
+          Michael Refalo is a highly experienced Creative Leader and Art Director based in Sydney, Australia, with over 15 years of expertise in Brand Strategy, Visual Communications, and Creative Execution.
+        </p>
+        <h2>Key Expertise & Services</h2>
+        <ul>
+          <li>Graphic Design & Visual Identity Systems</li>
+          <li>Creative Direction & Team Leadership</li>
+          <li>Brand Strategy & Development</li>
+          <li>Retail Marketing & FMCG Campaigns</li>
+          <li>Digital Strategy & UX Direction</li>
+          <li>Logo Design & Typography</li>
+          <li>Retouching & High-End Image Manipulation</li>
+          <li>Campaign Management for Global Brands</li>
+        </ul>
+        <h2>Experience with Top Brands</h2>
+        <p>
+          Throughout his career, Michael has collaborated with iconic brands including The Wiggles, Toys'R'Us (Babies'R'Us), iiNet, TPG Telecom, Goodman Fielder, Unilever, and more.
+        </p>
+        <h2>Portfolio Summary</h2>
+        <article>
+          <h3>The Wiggles - Album Cover & Promotion</h3>
+          <p>Creative direction and design for 'Wiggle Up, Giddy Up!' album using Adobe Creative Cloud and photography direction.</p>
+        </article>
+        <article>
+          <h3>Toys'R'Us - Retail Campaigns</h3>
+          <p>Visual strategic planning and print display management for global retail marketing campaigns.</p>
+        </article>
+        <article>
+          <h3>iiNet Business - Digital Help Hub</h3>
+          <p>Streamlining technical support via intuitive UX design and information architecture.</p>
+        </article>
+        <h2>Contact Details</h2>
+        <p>Email: m2.refalo.mr@gmail.com</p>
+        <p>Phone: +61 409 230 959</p>
+        <p>Location: Sydney, NSW, Australia</p>
+        <p>Skills: Adobe Photoshop, Illustrator, InDesign, Creative Strategy, Art Direction, Mentorship, Problem Solving.</p>
+      </section>
+
       {/* Noise Texture Overlay */}
       <div className="noise" />
       
@@ -296,7 +337,7 @@ export default function App() {
       <div className="absolute top-0 right-0 w-full md:w-1/2 h-screen pointer-events-none z-0 opacity-100 mix-blend-multiply">
         <img 
           src="https://raw.githubusercontent.com/mickrefalo90/MichaelRefalo-Portfolio/refs/heads/main/Michael%20Refalo-Right.jpg" 
-          alt="" 
+          alt="Michael Refalo - Creative Leader and Art Director" 
           referrerPolicy="no-referrer"
           className="w-full h-full object-contain object-right-top"
         />
@@ -404,7 +445,7 @@ export default function App() {
               <div className="w-24 h-24 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-brand-accent shrink-0">
                 <img 
                   src="https://media.licdn.com/dms/image/v2/C5603AQFc3qOsauE_4A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1530834090805?e=2147483647&v=beta&t=DliVNTbaoaLvCZ97QUHXkC34Y113mYergRT182lQp88" 
-                  alt="Michael Refalo" 
+                  alt="Michael Refalo - Freelance Creative Manager Sydney" 
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />
@@ -473,7 +514,7 @@ export default function App() {
               <div className="block w-full h-full">
                 <motion.img
                   src={project.image}
-                  alt={project.title}
+                  alt={`${project.title} - ${project.category} porfolio work by Michael Refalo`}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
